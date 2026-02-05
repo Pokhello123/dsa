@@ -1,143 +1,148 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Node {
+struct node {
     int data;
-    struct Node* next;
+    struct node *next;
 };
 
-// Insert at beginning
-void insertAtBeginning(struct Node** head_ref, int new_data) {
-    struct Node* new_node = (struct Node*) malloc(sizeof(struct Node));
-    new_node->data = new_data;
-    new_node->next = *head_ref;
-    *head_ref = new_node;
+struct node *head = NULL;
+
+/* Insert at beginning */
+void insertFirst(int value) {
+    struct node *newNode = malloc(sizeof(struct node));
+    newNode->data = value;
+    newNode->next = head;
+    head = newNode;
 }
 
-// Insert after a given node
-void insertAfter(struct Node* prev_node, int new_data) {
-    if (prev_node == NULL) {
-        printf("The given previous node cannot be NULL.\n");
-        return;
-    }
-    struct Node* new_node = (struct Node*) malloc(sizeof(struct Node));
-    new_node->data = new_data;
-    new_node->next = prev_node->next;
-    prev_node->next = new_node;
-}
+/* Insert at end */
+void insertLast(int value) {
+    struct node *newNode = malloc(sizeof(struct node));
+    struct node *temp = head;
+    newNode->data = value;
+    newNode->next = NULL;
 
-// Insert at the end
-void insertAtEnd(struct Node** head_ref, int new_data) {
-    struct Node* new_node = (struct Node*) malloc(sizeof(struct Node));
-    struct Node* last = *head_ref;
-
-    new_node->data = new_data;
-    new_node->next = NULL;
-
-    if (*head_ref == NULL) {
-        *head_ref = new_node;
+    if (head == NULL) {
+        head = newNode;
         return;
     }
 
-    while (last->next != NULL)
-        last = last->next;
+    while (temp->next != NULL)
+        temp = temp->next;
 
-    last->next = new_node;
+    temp->next = newNode;
 }
 
-// Delete a node by key
-void deleteNode(struct Node** head_ref, int key) {
-    struct Node *temp = *head_ref, *prev = NULL;
+/* Insert at middle (position) */
+void insertMiddle(int value, int pos) {
+    struct node *newNode = malloc(sizeof(struct node));
+    struct node *temp = head;
 
-    // If head node holds the key
-    if (temp != NULL && temp->data == key) {
-        *head_ref = temp->next;
-        free(temp);
+    newNode->data = value;
+
+    for (int i = 1; i < pos - 1 && temp != NULL; i++)
+        temp = temp->next;
+
+    if (temp == NULL) {
+        printf("Invalid position\n");
         return;
     }
 
-    // Search for the key
-    while (temp != NULL && temp->data != key) {
+    newNode->next = temp->next;
+    temp->next = newNode;
+}
+
+/* Delete from beginning */
+void deleteFirst() {
+    struct node *temp = head;
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+    head = head->next;
+    free(temp);
+}
+
+/* Delete from end */
+void deleteLast() {
+    struct node *temp = head, *prev;
+
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+
+    if (head->next == NULL) {
+        free(head);
+        head = NULL;
+        return;
+    }
+
+    while (temp->next != NULL) {
         prev = temp;
         temp = temp->next;
     }
 
-    // If key was not found
-    if (temp == NULL) return;
+    prev->next = NULL;
+    free(temp);
+}
 
-    // Unlink node
+/* Delete from middle (position) */
+void deleteMiddle(int pos) {
+    struct node *temp = head, *prev;
+
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+
+    for (int i = 1; i < pos && temp != NULL; i++) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Invalid position\n");
+        return;
+    }
+
     prev->next = temp->next;
     free(temp);
 }
 
-// Search a node
-int searchNode(struct Node* head, int key) {
-    struct Node* current = head;
-    while (current != NULL) {
-        if (current->data == key)
-            return 1;
-        current = current->next;
+/* Display list */
+void display() {
+    struct node *temp = head;
+    if (temp == NULL) {
+        printf("List is empty\n");
+        return;
     }
-    return 0;
+
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
 }
 
-// Sort the linked list
-void sortLinkedList(struct Node** head_ref) {
-    if (*head_ref == NULL) return; // check empty list
-
-    struct Node* current = *head_ref;
-    struct Node* index = NULL;
-    int temp;
-
-    while (current != NULL) {
-        index = current->next;
-        while (index != NULL) {
-            if (current->data > index->data) {
-                temp = current->data;
-                current->data = index->data;
-                index->data = temp;
-            }
-            index = index->next;
-        }
-        current = current->next;
-    }
-}
-
-// Print the list
-void printList(struct Node* node) {
-    while (node != NULL) {
-        printf("%d ", node->data);
-        node = node->next;
-    }
-    printf("\n");
-}
-
+/* Main */
 int main() {
-    struct Node* head = NULL;
+    insertFirst(10);
+    insertLast(30);
+    insertMiddle(20, 2);
+    display();
 
-    insertAtEnd(&head, 1);
-    insertAtBeginning(&head, 2);
-    insertAtBeginning(&head, 3);
-    insertAtEnd(&head, 4);
-    insertAfter(head->next, 5);
+    deleteFirst();
+    display();
 
-    printf("Linked list: ");
-    printList(head);
+    deleteLast();
+    display();
 
-    printf("After deleting 2: ");
-    deleteNode(&head, 2);   // ✅ Changed to delete 2
-    printList(head);
-
-    int item_to_find = 2;
-    if (searchNode(head, item_to_find)) {
-        printf("%d is found\n", item_to_find);
-    } else {
-        printf("%d is not found\n", item_to_find);
-    }
-
-    sortLinkedList(&head);
-    printf("Sorted List: ");
-    printList(head);
+    insertLast(40);
+    insertLast(50);
+    deleteMiddle(2);
+    display();
 
     return 0;
 }
